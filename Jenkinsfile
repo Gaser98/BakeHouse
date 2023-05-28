@@ -10,7 +10,7 @@ pipeline {
                             sh '''
                                 docker login -u ${USERNAME} -p ${PASSWORD}
                                 docker build -t ahmadesmailshata/bakehouseiti:v${BUILD_NUMBER} .
-                                docker push ahamdesmailshata/bakehouseiti:v${BUILD_NUMBER}
+                                docker push ahmadesmailshata/bakehouseiti:v${BUILD_NUMBER}
                                 echo ${BUILD_NUMBER} > ../build.txt
                             '''
                         }
