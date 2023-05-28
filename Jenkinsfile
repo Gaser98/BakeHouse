@@ -1,5 +1,5 @@
 pipeline {
-    agent { label 'iti-smart' }
+    agent { label 'myagent' }
     stages {
         stage('build') {
             steps {
