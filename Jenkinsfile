@@ -1,25 +1,22 @@
 pipeline {
-    agent { label 'iti-smart' }
-    parameters {
-        choice(name: 'ENV', choices: ['dev', 'test', 'prod',"release"])
-    } 
+    agent any
     stages {
         stage('build') {
             steps {
                 echo 'build'
                 script{
-                    if (params.ENV == "release") {
-                        withCredentials([usernamePassword(credentialsId: 'iti-smart-dockerhub', usernameVariable: 'USERNAME_ITI', passwordVariable: 'PASSWORD_ITI')]) {
+                    if (BRANCH_NAME == "dev" || BRANCH_NAME == "test" || BRANCH_NAME == "prod") {
+                        withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
                             sh '''
-                                docker login -u ${USERNAME_ITI} -p ${PASSWORD_ITI}
-                                docker build -t kareemelkasaby/bakehouseitismart:v${BUILD_NUMBER} .
-                                docker push kareemelkasaby/bakehouseitismart:v${BUILD_NUMBER}
+                                docker login -u ${USERNAME} -p ${PASSWORD}
+                                docker build -t Gaser98/bakehouseiti:v${BUILD_NUMBER} .
+                                docker push Gaser98/bakehouseiti:v${BUILD_NUMBER}
                                 echo ${BUILD_NUMBER} > ../build.txt
                             '''
                         }
                     }
                     else {
-                        echo "user choosed ${params.ENV}"
+                        echo "user choosed ${BRANCH_NAME}"
                     }
                 }
             }
@@ -28,14 +25,14 @@ pipeline {
             steps {
                 echo 'deploy'
                 script {
-                    if (params.ENV == "dev" || params.ENV == "test" || params.ENV == "prod") {
-                        withCredentials([file(credentialsId: 'iti-samrt-kubeconfig', variable: 'KUBECONFIG_ITI')]) {
+                    if (BRANCH_NAME == "release") {
+                        withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
                             sh '''
                                 export BUILD_NUMBER=$(cat ../build.txt)
                                 mv Deployment/deploy.yaml Deployment/deploy.yaml.tmp
                                 cat Deployment/deploy.yaml.tmp | envsubst > Deployment/deploy.yaml
                                 rm -f Deployment/deploy.yaml.tmp
-                                kubectl apply -f Deployment --kubeconfig ${KUBECONFIG_ITI} -n ${ENV}
+                                kubectl apply -f Deployment --kubeconfig ${KUBECONFIG} -n ${BRANCH_NAME}
                             '''
                         }
                     }
