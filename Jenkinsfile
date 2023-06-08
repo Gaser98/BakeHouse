@@ -26,7 +26,7 @@ pipeline {
                 echo 'deploy'
                 script {
                     if (BRANCH_NAME == "release") {
-                        withCredentials([usernamePassword(credentialsId: 'kubeconfig', usernameVariable: 'USERNAME', passwordVariable:'PASSWORD')]) {
+                        withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
                             sh '''
                                 export BUILD_NUMBER=$(cat ../build.txt)
                                 mv Deployment/deploy.yaml Deployment/deploy.yaml.tmp
